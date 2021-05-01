@@ -1,0 +1,26 @@
+{
+  "name": "stratos-token",
+  "version": "1.0.0",
+  "description": "ERC20 Stratos token",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.0.0",
+    "bignumber.js": "^9.0.1"
+  },
+  "scripts": {
+    "test": "truffle test --network development"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stratosnet/stratos-token-erc20.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/stratosnet/stratos-token-erc20/issues"
+  },
+  "homepage": "https://github.com/stratosnet/stratos-token#readme"
+}
