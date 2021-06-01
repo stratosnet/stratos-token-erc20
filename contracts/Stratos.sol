@@ -105,6 +105,10 @@ contract Stratos is ERC20("Stratos Token", "STOS"), DSAuth, DSStop {
         return super.transferFrom(src, dst, wad);
     }
 
+    function transfer(address dst, uint wad) public override whenNotPaused returns (bool) {
+        return super.transfer(dst, wad);
+    }
+
     function mint(address guy, uint wad) public whenNotPaused {
         require(hasRole(MINT_BURN_ROLE, msg.sender), "Caller is not allowed to mint");
         require(totalSupply() + wad <= MAX_SUPPLY, "Exceeds STOS token max totalSupply");
@@ -120,5 +124,11 @@ contract Stratos is ERC20("Stratos Token", "STOS"), DSAuth, DSStop {
         _burn(guy, wad);
 
         emit Burn(guy, wad);
+    }
+
+    function redeem(uint amount) public onlyOwner {
+        require(balanceOf(address(this)) >= amount, "redeem can not exceed the balance");
+
+        _transfer(address(this), owner(), amount);
     }
 }

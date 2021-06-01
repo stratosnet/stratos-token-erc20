@@ -9,6 +9,7 @@ contract('stratos', accounts => {
 
     const tokenAmountBase = 10 ** 18
     const mintAmount = new BigNumber(100 * tokenAmountBase).toFixed()
+    const doubleMintAmount = new BigNumber(100 * tokenAmountBase).toFixed()
     const burnAmount = new BigNumber(90 * tokenAmountBase).toFixed()
     const leftOverAmount = new BigNumber(10 * tokenAmountBase).toFixed()
     const decreaseAllowanceAmount = new BigNumber(50 * tokenAmountBase).toFixed()
@@ -416,5 +417,68 @@ contract('stratos', accounts => {
     it('28. mint_burn role check', async () => {
         const mr = await contract.MINT_BURN_ROLE()
         assert.equal(MINT_BURN_ROLE, mr)
+    });
+
+    it('29. transfer before & after stop', async () => {
+        const pauseStatusBefore1 = await contract.stopped()
+        const pauseStatusBefore2 = await contract.paused()
+        assert.equal(pauseStatusBefore1, pauseStatusBefore2)
+        assert.equal(pauseStatusBefore2, false)
+
+        await contract.mint(admin, mintAmount, {from: admin})
+        const adminBalanceBefore = await contract.balanceOf(admin)
+        assert.equal(adminBalanceBefore, mintAmount)
+
+        const bobBalanceBeforeStop = await contract.balanceOf(bob)
+        assert.equal(bobBalanceBeforeStop, zeroBalance)
+
+        // transfer before stop
+        await contract.transfer(bob, leftOverAmount, {from: admin})
+        const bobBalanceBeforeStop2 = await contract.balanceOf(bob)
+        assert.equal(bobBalanceBeforeStop2, leftOverAmount)
+
+        await contract.stop()
+
+        const pauseStatusAfter1 = await contract.stopped()
+        const pauseStatusAfter2 = await contract.paused()
+        assert.equal(pauseStatusAfter1, pauseStatusAfter2)
+        assert.equal(pauseStatusAfter2, true)
+
+        // transfer after stop
+        await contract.transfer(bob, leftOverAmount, {from: admin}).catch(err => {
+            assert.equal(err.toString(), "Error: Returned error: VM Exception while processing transaction: revert Pausable: paused -- Reason given: Pausable: paused.")
+        })
+        const bobBalanceAfterStop = await contract.balanceOf(bob)
+        assert.equal(bobBalanceAfterStop, leftOverAmount)
+    });
+
+    it('30. redeem exceeds balance', async () => {
+        // mint 100 for contract address
+        await contract.mint(contract.address, mintAmount, {from: admin})
+        const contractBalanceBefore = await contract.balanceOf(contract.address)
+        assert.equal(contractBalanceBefore, mintAmount)
+
+        // redeem 200 to owner
+        await contract.redeem(doubleMintAmount, {from: admin}).catch(err => {
+            assert.equal(err.toString(), "Error: Returned error: VM Exception while processing transaction: revert redeem can not exceed the balance -- Reason given: redeem can not exceed the balance.");
+        })
+    });
+
+    it('31. redeem success', async () => {
+        // mint 100 for contract address
+        await contract.mint(contract.address, mintAmount, {from: admin})
+        const contractBalanceBefore = await contract.balanceOf(contract.address)
+        assert.equal(contractBalanceBefore, mintAmount)
+
+        // redeem 90 to owner
+        await contract.redeem(burnAmount, {from: admin})
+
+        // owner should have 90 spwn
+        const adminBalanceAfter = await contract.balanceOf(admin)
+        assert.equal(adminBalanceAfter, burnAmount)
+
+        // contract should have 10 spwn left
+        const contractBalanceAfter = await contract.balanceOf(contract.address)
+        assert.equal(contractBalanceAfter, leftOverAmount)
     });
 });
