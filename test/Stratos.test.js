@@ -88,7 +88,7 @@ contract('stratos', accounts => {
 
     it('10. bob calls to change ownership to himself', async () => {
         await contract.setOwner(bob, {from: bob}).catch(err => {
-            assert.equal(err.toString(), "Error: Returned error: VM Exception while processing transaction: revert Ownable: caller is not the owner -- Reason given: Ownable: caller is not the owner.")
+            assert.equal(err.reason.toString(), "Ownable: caller is not the owner")
         })
         const newOwner = await contract.owner()
         assert.equal(newOwner, admin)
@@ -119,7 +119,7 @@ contract('stratos', accounts => {
 
         // failed because of amount exceeding allowance
         await contract.transferFrom(admin, bob, burnAmount, {from: bob}).catch(err => {
-            assert.equal(err.toString(), "Error: Returned error: VM Exception while processing transaction: revert ERC20: transfer amount exceeds allowance -- Reason given: ERC20: transfer amount exceeds allowance.")
+            assert.equal(err.reason.toString(), "ERC20: insufficient allowance")
         })
 
         const adminBalanceAfter = await contract.balanceOf(admin)
@@ -189,7 +189,7 @@ contract('stratos', accounts => {
 
     it('16. bob mints for bob 100 STOS', async () => {
         await contract.mint(bob, mintAmount, {from: bob}).catch(err => {
-            assert.equal(err.toString(), "Error: Returned error: VM Exception while processing transaction: revert Caller is not allowed to mint -- Reason given: Caller is not allowed to mint.")
+            assert.equal(err.reason.toString(), "Caller is not allowed to mint")
         })
         const bobBalance = await contract.balanceOf(bob)
         assert.equal(bobBalance, zeroBalance)
@@ -211,7 +211,7 @@ contract('stratos', accounts => {
         assert.equal(bobBalanceAfterMint, mintAmount)
 
         await contract.burn(bob, burnAmount, {from: bob}).catch(err => {
-            assert.equal(err.toString(), "Error: Returned error: VM Exception while processing transaction: revert Caller is not allowed to burn -- Reason given: Caller is not allowed to burn.")
+            assert.equal(err.reason.toString(), "Caller is not allowed to burn")
         })
         const bobBalanceAfterBurn = await contract.balanceOf(bob)
         assert.equal(bobBalanceAfterBurn, mintAmount)
@@ -234,7 +234,7 @@ contract('stratos', accounts => {
         assert.equal(pauseStatusAfter2, true)
 
         await contract.mint(bob, mintAmount, {from: admin}).catch(err => {
-            assert.equal(err.toString(), "Error: Returned error: VM Exception while processing transaction: revert Pausable: paused -- Reason given: Pausable: paused.")
+            assert.equal(err.reason.toString(), "Pausable: paused")
         })
         const bobBalanceAfterStop = await contract.balanceOf(bob)
         assert.equal(bobBalanceAfterStop, zeroBalance)
@@ -246,7 +246,7 @@ contract('stratos', accounts => {
         assert.equal(bobBalanceBefore1, zeroBalance)
 
         await contract.mint(bob, mintAmount, {from: bob}).catch(err => {
-            assert.equal(err.toString(), "Error: Returned error: VM Exception while processing transaction: revert Caller is not allowed to mint -- Reason given: Caller is not allowed to mint.")
+            assert.equal(err.reason.toString(), "Caller is not allowed to mint")
         })
 
         const bobBalanceBefore2 = await contract.balanceOf(bob)
@@ -268,7 +268,7 @@ contract('stratos', accounts => {
         assert.equal(bobBalanceBefore1, zeroBalance)
 
         await contract.mint(bob, mintAmount, {from: bob}).catch(err => {
-            assert.equal(err.toString(), "Error: Returned error: VM Exception while processing transaction: revert Caller is not allowed to mint -- Reason given: Caller is not allowed to mint.")
+            assert.equal(err.reason.toString(), "Caller is not allowed to mint")
         })
 
         const bobBalanceBefore2 = await contract.balanceOf(bob)
@@ -291,7 +291,7 @@ contract('stratos', accounts => {
         assert.equal(bobBalanceBefore1, mintAmount)
 
         await contract.burn(bob, burnAmount, {from: bob}).catch(err => {
-            assert.equal(err.toString(), "Error: Returned error: VM Exception while processing transaction: revert Caller is not allowed to burn -- Reason given: Caller is not allowed to burn.")
+            assert.equal(err.reason.toString(), "Caller is not allowed to burn")
         })
 
         const bobBalanceBefore2 = await contract.balanceOf(bob)
@@ -314,7 +314,7 @@ contract('stratos', accounts => {
         assert.equal(bobBalanceBefore1, mintAmount)
 
         await contract.burn(bob, burnAmount, {from: bob}).catch(err => {
-            assert.equal(err.toString(), "Error: Returned error: VM Exception while processing transaction: revert Caller is not allowed to burn -- Reason given: Caller is not allowed to burn.")
+            assert.equal(err.reason.toString(), "Caller is not allowed to burn")
         })
 
         const bobBalanceBefore2 = await contract.balanceOf(bob)
@@ -342,7 +342,7 @@ contract('stratos', accounts => {
         assert.equal(hasMintBurnRole, false)
 
         await contract.mint(bob, mintAmount, {from: admin}).catch(err => {
-            assert.equal(err.toString(), "Error: Returned error: VM Exception while processing transaction: revert Caller is not allowed to mint -- Reason given: Caller is not allowed to mint.")
+            assert.equal(err.reason.toString(), "Caller is not allowed to mint")
         })
 
         const bobBalanceAfter = await contract.balanceOf(bob)
@@ -364,7 +364,7 @@ contract('stratos', accounts => {
         assert.equal(hasMintBurnRole, false)
 
         await contract.burn(bob, leftOverAmount, {from: admin}).catch(err => {
-            assert.equal(err.toString(), "Error: Returned error: VM Exception while processing transaction: revert Caller is not allowed to burn -- Reason given: Caller is not allowed to burn.")
+            assert.equal(err.reason.toString(), "Caller is not allowed to burn")
         })
 
         const bobBalanceAfter = await contract.balanceOf(bob)
@@ -387,7 +387,7 @@ contract('stratos', accounts => {
         assert.equal(totalSupply1, maxTotalSupply)
 
         await contract.mint(bob, mintAmount, {from: admin}).catch(err => {
-            assert.equal(err.toString(), "Error: Returned error: VM Exception while processing transaction: revert Exceeds STOS token max totalSupply -- Reason given: Exceeds STOS token max totalSupply.")
+            assert.equal(err.reason.toString(), "Exceeds STOS token max totalSupply")
         })
         const bobBalance = await contract.balanceOf(bob)
         assert.equal(bobBalance, zeroBalance)
@@ -446,7 +446,7 @@ contract('stratos', accounts => {
 
         // transfer after stop
         await contract.transfer(bob, leftOverAmount, {from: admin}).catch(err => {
-            assert.equal(err.toString(), "Error: Returned error: VM Exception while processing transaction: revert Pausable: paused -- Reason given: Pausable: paused.")
+            assert.equal(err.reason.toString(), "Pausable: paused")
         })
         const bobBalanceAfterStop = await contract.balanceOf(bob)
         assert.equal(bobBalanceAfterStop, leftOverAmount)
@@ -460,7 +460,7 @@ contract('stratos', accounts => {
 
         // redeem 200 to owner
         await contract.redeem(doubleMintAmount, {from: admin}).catch(err => {
-            assert.equal(err.toString(), "Error: Returned error: VM Exception while processing transaction: revert redeem can not exceed the balance -- Reason given: redeem can not exceed the balance.");
+            assert.equal(err.reason.toString(), "redeem can not exceed the balance");
         })
     });
 
